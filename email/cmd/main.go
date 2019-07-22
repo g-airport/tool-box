@@ -22,6 +22,7 @@ type VerifierFactory struct {
 var (
 	failT int32
 	trueF int32
+	cnt   int32
 )
 
 type Verify func(email string) (*verifier.Lookup, error)
@@ -110,19 +111,22 @@ func main() {
 func Do(f Verify, data []*entity.EmailInfo, wg *sync.WaitGroup) {
 
 	for _, v := range data {
-		e := &entity.EmailInfo{}
+		e := &entity.EmailInfo{
+			Email:     v.Email,
+			SrcStatus: v.SrcStatus,
+		}
 		out, err := f(v.Email)
-		fmt.Printf("go %+v\n", out)
+		fmt.Printf("go: %v ==> cnt: %d \n", out,atomic.AddInt32(&cnt,1))
 		if out != nil {
 			e.Err = err
 			e.RetStatus = out.Deliverable
-			if e.SrcStatus == "250" || e.SrcStatus =="1" {
+			if e.SrcStatus == "250" || e.SrcStatus == "1" {
 				if !out.Deliverable {
 					e.Extra = fmt.Sprintf("源数据状态正常，校验结果为无效邮箱")
 					atomic.AddInt32(&failT, 1)
 				}
 			}
-			if e.SrcStatus != "250" {
+			if e.SrcStatus == "domain_invalid" || e.SrcStatus == "0" {
 				if out.Deliverable {
 					e.Extra = fmt.Sprintf("源数据状态不合法，校验结果证实该邮箱有效")
 					atomic.AddInt32(&trueF, 1)

@@ -13,7 +13,7 @@ import (
 
 // this a read source file
 
-var emailFile = "/Users/tqll/Downloads/email_sample.csv"
+var emailFile = "/Users/tqll/Downloads/email_temp_bk.csv"
 
 func InitSourceData() []*entity.EmailInfo {
 	data, err := ioutil.ReadFile(emailFile)

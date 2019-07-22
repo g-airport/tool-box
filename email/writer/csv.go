@@ -8,7 +8,7 @@ import (
 	"github.com/g-airport/tool-box/email/entity"
 )
 
-var baseDir = "../tmp/email/"
+var baseDir = "/Users/tqll/work/go/src/github.com/g-airport/tool-box/email/tmp/email/"
 
 func CSVOutput(in chan *entity.EmailInfo) [][]string {
 	out := make([][]string, 0)
@@ -28,13 +28,14 @@ func CSVOutput(in chan *entity.EmailInfo) [][]string {
 }
 
 func Write2CSV(es chan *entity.EmailInfo,doneChan chan struct{}) string {
+	fmt.Println("base dir",baseDir)
 	fi, err := os.Stat(baseDir)
 	fmt.Println("file ",fi.Name())
 	if err != nil {
 		_ = os.MkdirAll(baseDir, 0755)
 	}
 
-	filename := fmt.Sprintf(baseDir + "email_check_all_ex.csv")
+	filename := fmt.Sprintf(baseDir + "email_check_all.csv")
 	f, err := os.Create(filename)
 	fmt.Println("dst file",f.Name())
 	if err != nil {
