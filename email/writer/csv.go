@@ -30,25 +30,28 @@ func CSVOutput(in chan *entity.EmailInfo) [][]string {
 func Write2CSV(es chan *entity.EmailInfo,doneChan chan struct{}) string {
 	fmt.Println("base dir",baseDir)
 	fi, err := os.Stat(baseDir)
+	if err != nil  {
+		panic(err)
+	}
 	fmt.Println("file ",fi.Name())
 	if err != nil {
 		_ = os.MkdirAll(baseDir, 0755)
 	}
 
-	filename := fmt.Sprintf(baseDir + "email_check_all.csv")
+	filename := fmt.Sprintf(baseDir + "email_checked.csv")
 	f, err := os.Create(filename)
 	fmt.Println("dst file",f.Name())
 	if err != nil {
 		panic(err)
 	}
-	defer f.Close()
+	defer  f.Close()
 	// 写入UTF-8 BOM
-	f.WriteString("\xEF\xBB\xBF")
+	_,_ = f.WriteString("\xEF\xBB\xBF")
 	//创建一个新的写入文件流
 	w := csv.NewWriter(f)
 	data := CSVOutput(es)
 	//写入数据
-	w.WriteAll(data)
+	_ =w.WriteAll(data)
 
 	w.Flush()
 	doneChan <- struct{}{}

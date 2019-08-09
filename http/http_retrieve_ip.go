@@ -10,7 +10,6 @@ import (
 	"net/http"
 	"net/http/httputil"
 	"net/url"
-	"os"
 	"strings"
 
 	"golang.org/x/net/proxy"
@@ -28,14 +27,13 @@ var (
 	Url = ""
 )
 
-// example
+//example
 //https://api.ipify.org/
 //http://lumtest.com/myip.json
 
 // ----------------------------
 
 func RetrieveV1(url string) string {
-	//https://api.ipify.org/
 	res, err := http.Get(url)
 	if err != nil {
 		log.Fatal("Failed to retrieve public IP")
@@ -50,7 +48,6 @@ func RetrieveV1(url string) string {
 }
 
 func RetrieveV2(url string) string {
-	//https://api.ipify.org/
 	request, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		log.Fatal("err request", err)
@@ -58,7 +55,7 @@ func RetrieveV2(url string) string {
 	request.Header.Add("Upgrade-Insecure-Requests", "1")
 	request.Header.Add("User-Agent",
 		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_14_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/75.0.3770.142 Safari/537.36")
-	res, err := NewHttpClient(_proxyAddr).Do(request)
+	res, err := NewHttpProxyClient(_proxyAddr).Do(request)
 	if err != nil {
 		log.Fatal("Failed to retrieve public IP :", err)
 	}
@@ -67,7 +64,7 @@ func RetrieveV2(url string) string {
 	if err != nil {
 		log.Fatal("RetrieveV2 read body err", err)
 	}
-	// avoid memory leak
+	//avoid memory leak
 	//buf := bytes.NewBuffer(make([]byte, 1024))
 	//_, err = io.Copy(buf, res.Body)
 	//if err != nil {
@@ -133,9 +130,7 @@ func RetrieveV3() {
 
 }
 
-// --------------------------
-
-func Sock5(socks5Url string) {
+func InitSock5(socks5Url string) {
 	var (
 		auth    *proxy.Auth
 		pUrl, _ = url.Parse(socks5Url)
@@ -155,43 +150,4 @@ func Sock5(socks5Url string) {
 		DialContext: func(ctx context.Context, network, addr string) (net.Conn, error) {
 			return dialer.Dial(network, addr)
 		}}
-}
-
-// ----------------------------
-
-func loggingMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// Do stuff here
-		log.Println(r.RequestURI)
-		// Call the next handler, which can be another middleware in the chain, or the final handler.
-		next.ServeHTTP(w, r)
-	})
-}
-
-// authMiddleware verifies the auth token on the request matches the
-// one defined in the environment
-func authMiddleware(next http.Handler) http.Handler {
-	// authToken is the token that must be used on all requests
-	authToken := getEnv("AUTH_TOKEN", "")
-
-	// Return the Handlerfunc that asserts the auth token
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if authToken != "" {
-			if r.Header.Get("X-Auth-Token") == authToken {
-				w.WriteHeader(http.StatusUnauthorized)
-				return
-			}
-		}
-		next.ServeHTTP(w, r)
-		return
-	})
-}
-
-// getEnv retrieves variables from the environment and falls back
-// to a passed fallback variable if it isn't set
-func getEnv(key, fallback string) string {
-	if value, ok := os.LookupEnv(key); ok {
-		return value
-	}
-	return fallback
 }

@@ -13,7 +13,7 @@ import (
 
 // this a read source file
 
-var emailFile = "/Users/tqll/Downloads/email_temp_bk.csv"
+var emailFile = "/Users/tqll/Downloads/user_email_201907_with_coupon.csv"
 
 func InitSourceData() []*entity.EmailInfo {
 	data, err := ioutil.ReadFile(emailFile)
@@ -35,7 +35,6 @@ func InitSourceData() []*entity.EmailInfo {
 			r := strings.Split(v, "	")
 			e := &entity.EmailInfo{
 				Email:     r[0],
-				SrcStatus: r[1],
 			}
 			out = append(out, e)
 		}

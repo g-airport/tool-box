@@ -3,9 +3,9 @@ package entity
 const IsValid = 1
 
 type EmailInfo struct {
-	Email     string
-	SrcStatus string
-	RetStatus bool
-	Extra     string
-	Err       error
+	Email     string `json:"address"`
+	SrcStatus string `json:"-"`
+	RetStatus bool   `json:"deliverable"`
+	Extra     string `json:"-"`
+	Err       error  `json:"-"`
 }
